@@ -4,6 +4,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {FBXLoader} from 'three/examples/jsm/loaders/FBXLoader.js';
 import {GLTFExporter} from 'three/examples/jsm/exporters/GLTFExporter.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GridHelper } from 'three';
+import * as dat from 'dat.gui';
+
+
 
 
 
@@ -35,7 +39,12 @@ let initialMousePosition = new THREE.Vector2();
 
 const hoveredMaterial = new THREE.PointsMaterial({ color: 0xffff00, size: 0.1 });
 const defaultMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
-
+const size = 100; // La taille de la grille
+const divisions = 100; // Le nombre de divisions sur la grille
+const gridHelper = new GridHelper(size, divisions, 0x0000ff, 0x808080); // Vous pouvez changer les couleurs ici
+scene.add(gridHelper);
+let backgroundColor = 0x424242;
+renderer.setClearColor(backgroundColor);
 //////////////////////////////////// light ////////////////////////////////////
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); 
 scene.add(ambientLight);
@@ -131,7 +140,7 @@ console.log("Points ajoutés à la scène", currentPoints);
 // });
 let interactableObjects = [cube, cube2, plane, lightHelper, ambientLight, directionalLight];
 renderer.domElement.addEventListener('mousedown', function(event) {
-    if (event.button === 0 && event.altKey) {
+    if (event.button === 0 && !control.dragging) {
         isRotating = true;
         initialMousePosition.set(event.clientX, event.clientY);
     }
@@ -183,8 +192,14 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 let objectSelected = false;
+function onKeyDown(event) {
+    // Vérifier si la touche "Suppr" ou "Delete" est pressée
+    if (event.key === 'Delete' || event.key === 'Del') {
+        deleteSelectedObject();
+    }
+}
 
-
+document.addEventListener('keydown', onKeyDown);
 function onMouseDown(event) {
         if (control.dragging) {
         return;
@@ -428,6 +443,176 @@ function clearScene() {
         scene.remove(scene.children[0]); 
     }
 }
+function deleteSelectedObject() {
+    if (selectedObject) {
+        // Supprime l'objet sélectionné de la scène
+        scene.remove(selectedObject);
+
+        // Libérer la mémoire si nécessaire, surtout pour des géométries ou des matériaux complexes
+        if (selectedObject.geometry) {
+            selectedObject.geometry.dispose();
+        }
+        if (selectedObject.material) {
+            if (selectedObject.material.length) {
+                // Pour les objets avec des matériaux multiples
+                for (const material of selectedObject.material) {
+                    material.dispose();
+                }
+            } else {
+                // Pour les objets avec un seul matériau
+                selectedObject.material.dispose();
+            }
+        }
+
+        // Réinitialiser la variable selectedObject
+        selectedObject = null;
+
+        // Mettre à jour le rendu
+        renderer.render(scene, camera);
+    } else {
+        console.log("Aucun objet n'est sélectionné pour la suppression.");
+    }
+}
+//guizmo 3D qui permet de mettre la camera en perspective ou en orthographique et en vu de face ou de dessus
+const gui = new dat.GUI();
+const cameraFolder = gui.addFolder('Camera');
+cameraFolder.add(camera, 'fov', 0, 180).onChange(() => camera.updateProjectionMatrix());
+cameraFolder.add(camera, 'near', 0.1, 10000).onChange(() => camera.updateProjectionMatrix());
+cameraFolder.add(camera, 'far', 0.1, 10000).onChange(() => camera.updateProjectionMatrix());
+cameraFolder.add(camera, 'zoom', 0.1, 10).onChange(() => camera.updateProjectionMatrix());
+
+// Ajout des contrôleurs pour la position et la rotation de la caméra
+const cameraPositionGUI = cameraFolder.addFolder('Position');
+cameraPositionGUI.add(camera.position, 'x', -100, 100).listen();
+cameraPositionGUI.add(camera.position, 'y', -100, 100).listen();
+cameraPositionGUI.add(camera.position, 'z', -100, 100).listen();
+
+const cameraRotationGUI = cameraFolder.addFolder('Rotation');
+cameraRotationGUI.add(camera.rotation, 'x', -Math.PI, Math.PI).listen();
+cameraRotationGUI.add(camera.rotation, 'y', -Math.PI, Math.PI).listen();
+cameraRotationGUI.add(camera.rotation, 'z', -Math.PI, Math.PI).listen();
+
+cameraFolder.add(camera, 'fov', 0, 180).onChange(function() {
+    camera.updateProjectionMatrix();
+});
+cameraFolder.add(camera, 'near', 0.1, 10000).onChange(function() {
+    camera.updateProjectionMatrix();
+});
+cameraFolder.add(camera, 'far', 0.1, 10000).onChange(function() {
+    camera.updateProjectionMatrix();
+});
+cameraFolder.add(camera, 'zoom', 0.1, 10).onChange(function() {
+    camera.updateProjectionMatrix();
+});
+cameraFolder.add(camera, 'position', {
+    'Vue de face': new THREE.Vector3(0, 0, 5),
+    'Vue de dessus': new THREE.Vector3(0, 5, 0)
+}).onChange(function(value) {
+    camera.position.copy(value);
+});
+cameraFolder.add(camera, 'rotation', {
+    'Vue de face': new THREE.Euler(0, 0, 0),
+    'Vue de dessus': new THREE.Euler(-Math.PI / 2, 0, 0)
+}).onChange(function(value) {
+    camera.rotation.copy(value);
+});
+cameraFolder.add(camera, 'isPerspectiveCamera').onChange(function(value) {
+    if (value) {
+        camera.toPerspective();
+    } else {
+        camera.toOrthographic();
+    }
+});
+cameraFolder.open();
+
+const lightFolder = gui.addFolder('Lumière');
+lightFolder.add(ambientLight, 'intensity', 0, 1);
+lightFolder.add(directionalLight, 'intensity', 0, 1);
+lightFolder.add(directionalLight.position, 'x', -100, 100);
+lightFolder.add(directionalLight.position, 'y', -100, 100);
+lightFolder.add(directionalLight.position, 'z', -100, 100);
+lightFolder.add(directionalLight, 'castShadow');
+lightFolder.add(directionalLight.shadow.camera, 'near', 0.1, 10000).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.camera, 'far', 0.1, 10000).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.camera, 'left', -50, 50).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.camera, 'right', -50, 50).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.camera, 'top', -50, 50).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.camera, 'bottom', -50, 50).onChange(function() {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+});
+lightFolder.add(directionalLight.shadow.mapSize, 'width', 512, 8192).onChange(function() {
+    directionalLight.shadow.map.dispose();
+    directionalLight.shadow.map = null;
+    directionalLight.shadow.map = new THREE.WebGLShadowMap(renderer);
+});
+lightFolder.add(directionalLight.shadow.mapSize, 'height', 512, 8192).onChange(function() {
+    directionalLight.shadow.map.dispose();
+    directionalLight.shadow.map = null;
+    directionalLight.shadow.map = new THREE.WebGLShadowMap(renderer);
+});
+lightFolder.open();
+
+const sceneFolder = gui.addFolder('Scène');
+const bgColor = { color: '#424242' }; // Utiliser un objet pour la couleur
+sceneFolder.addColor(bgColor, 'color').onChange(value => {
+    scene.background = new THREE.Color(value);
+    if (scene.fog) {
+        const fogFolder = sceneFolder.addFolder('Fog');
+        fogFolder.add(scene.fog, 'near', 0.1, 100).onChange(() => scene.fog.near = parseFloat(scene.fog.near));
+        fogFolder.add(scene.fog, 'far', 0.1, 100).onChange(() => scene.fog.far = parseFloat(scene.fog.far));
+    }
+});
+sceneFolder.open();
+
+const objectFolder = gui.addFolder('Objet');
+objectFolder.add(cube.position, 'x', -10, 10);
+objectFolder.add(cube.position, 'y', -10, 10);
+objectFolder.add(cube.position, 'z', -10, 10);
+objectFolder.add(cube.rotation, 'x', 0, Math.PI * 2);
+objectFolder.add(cube.rotation, 'y', 0, Math.PI * 2);
+objectFolder.add(cube.rotation, 'z', 0, Math.PI * 2);
+objectFolder.add(cube.scale, 'x', 0.1, 10);
+objectFolder.add(cube.scale, 'y', 0.1, 10);
+objectFolder.add(cube.scale, 'z', 0.1, 10);
+objectFolder.add(cube, 'visible');
+objectFolder.add(cube, 'castShadow');
+objectFolder.add(cube, 'receiveShadow');
+objectFolder.open();
+
+const transformFolder = gui.addFolder('Transformations');
+transformFolder.add(control, 'showX').name('Axe X');
+transformFolder.add(control, 'showY').name('Axe Y');
+transformFolder.add(control, 'showZ').name('Axe Z');
+transformFolder.add(control, 'space', {
+    'Local': 'local',
+    'Monde': 'world'
+});
+transformFolder.open();
+
+
+const rendererFolder = gui.addFolder('Rendu');
+rendererFolder.add(renderer.shadowMap, 'enabled').name('Activer ShadowMap');
+rendererFolder.add(renderer.shadowMap, 'type', {
+    'BasicShadowMap': THREE.BasicShadowMap,
+    'PCFShadowMap': THREE.PCFShadowMap,
+    'PCFSoftShadowMap': THREE.PCFSoftShadowMap
+}).onChange(function(value) {
+    renderer.shadowMap.type = parseInt(value);
+});
+rendererFolder.open();
+
+
+
 
 function loadGLTF(url) {
     const loader = new GLTFLoader();
