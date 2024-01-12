@@ -5,7 +5,7 @@ pour le moment il est juste possible je manipuler les objets dans la scene et de
 - click gauche sur un objet pour le selectionner
 - click gauche dans le vide pour deselectionner
 - click droit pour deplacer la camera
-- alt + click gauche pour rotation de la camera
+- click gauche maintenu pour rotation de la camera
 - molette pour zoomer et dezoomer
 
 ## buttons
