@@ -41,7 +41,7 @@ const hoveredMaterial = new THREE.PointsMaterial({ color: 0xffff00, size: 0.1 })
 const defaultMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
 const size = 100; // La taille de la grille
 const divisions = 100; // Le nombre de divisions sur la grille
-const gridHelper = new GridHelper(size, divisions, 0x0000ff, 0x808080); // Vous pouvez changer les couleurs ici
+let gridHelper = new GridHelper(size, divisions, 0x0000ff, 0x808080); // Vous pouvez changer les couleurs ici
 scene.add(gridHelper);
 let backgroundColor = 0x424242;
 renderer.setClearColor(backgroundColor);
@@ -611,6 +611,32 @@ rendererFolder.add(renderer.shadowMap, 'type', {
 });
 rendererFolder.open();
 
+const gridParams = {
+    size: 100, // Taille initiale
+    divisions: 100, // Divisions initiales
+    color: 0x0000ff // Couleur initiale
+};
+
+// Fonction pour mettre à jour la grille
+function updateGrid() {
+    // Supprimer l'ancienne grille si elle existe
+    if (gridHelper) scene.remove(gridHelper);
+
+    // Créer une nouvelle grille avec la nouvelle taille et divisions
+    gridHelper = new THREE.GridHelper(gridParams.size, gridParams.divisions, gridParams.color, 0x808080);
+    scene.add(gridHelper);
+}
+
+// Ajout de contrôleurs pour la grille dans dat.GUI
+const gridFolder = gui.addFolder('Grille');
+gridFolder.add(gridHelper, 'visible');
+gridFolder.add(gridParams, 'size', 1, 100).onChange(updateGrid);
+gridFolder.add(gridParams, 'divisions', 1, 100).onChange(updateGrid);
+gridFolder.addColor(gridParams, 'color').onChange(value => {
+    gridParams.color = new THREE.Color(value);
+    updateGrid();
+});
+gridFolder.open();
 
 
 
