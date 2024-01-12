@@ -6,7 +6,11 @@ import {GLTFExporter} from 'three/examples/jsm/exporters/GLTFExporter.js';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { GridHelper } from 'three';
 import * as dat from 'dat.gui';
-
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass';
 
 
 
@@ -647,6 +651,40 @@ gridFolder.addColor(gridParams, 'color').onChange(value => {
 gridFolder.open();
 
 
+const composer = new EffectComposer(renderer);
+
+// Créer un render pass
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Créer un FXAA pass
+const fxaaPass = new ShaderPass(FXAAShader);
+fxaaPass.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+composer.addPass(fxaaPass);
+
+// Remplacer la boucle de rendu habituelle
+const smaaPass = new SMAAPass(window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio());
+composer.addPass(smaaPass);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function loadGLTF(url) {
     const loader = new GLTFLoader();
@@ -674,6 +712,7 @@ scene.add(directionalLight);
 function update() {
     requestAnimationFrame(update);
     updateEdgeAndPointRepresentations();
+    composer.render();
     if (selectedObject === lightHelper) {
         updateLightPosition();
     }
