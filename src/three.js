@@ -610,7 +610,15 @@ rendererFolder.add(renderer.shadowMap, 'type', {
     renderer.shadowMap.type = parseInt(value);
 });
 rendererFolder.open();
+rendererFolder.add(renderer, 'outputEncoding', {
+    'LinearEncoding': THREE.LinearEncoding,
+    'sRGBEncoding': THREE.sRGBEncoding,
+    'GammaEncoding': THREE.GammaEncoding
+}).onChange(function(value) {
+    renderer.outputEncoding = parseInt(value);
+});
 
+rendererFolder.open();
 const gridParams = {
     size: 100, // Taille initiale
     divisions: 100, // Divisions initiales
