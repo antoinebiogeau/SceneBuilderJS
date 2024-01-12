@@ -72,13 +72,13 @@ let isVertexSelected = false;
 directionalLight.castShadow = true;
 
 directionalLight.shadow.camera.near = 0.1;
-directionalLight.shadow.camera.far = 150;
-directionalLight.shadow.camera.left = -50;
-directionalLight.shadow.camera.right = 50;
-directionalLight.shadow.camera.top = 50;
-directionalLight.shadow.camera.bottom = -50;
-directionalLight.shadow.mapSize.width = 2048; 
-directionalLight.shadow.mapSize.height = 2048; 
+directionalLight.shadow.camera.far = 15;
+directionalLight.shadow.camera.left = -5;
+directionalLight.shadow.camera.right = 5;
+directionalLight.shadow.camera.top = 5;
+directionalLight.shadow.camera.bottom = -5;
+directionalLight.shadow.mapSize.width = 1024; 
+directionalLight.shadow.mapSize.height = 1024; 
 
 
 /////////////////////////////////////////////////////////////////////////////////
