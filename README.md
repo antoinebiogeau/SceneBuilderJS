@@ -21,3 +21,7 @@ pour le moment il est juste possible je manipuler les objets dans la scene et de
 
 ## preview du projet en cours de developpement (alpha)
 ![image](./preview.png)
+
+## lien pour tester le projet
+amusé vous a tout casser 
+https://scene-builder-js.vercel.app/
