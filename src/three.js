@@ -8,7 +8,7 @@ import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -72,13 +72,13 @@ let isVertexSelected = false;
 directionalLight.castShadow = true;
 
 directionalLight.shadow.camera.near = 0.1;
-directionalLight.shadow.camera.far = 15;
-directionalLight.shadow.camera.left = -5;
-directionalLight.shadow.camera.right = 5;
-directionalLight.shadow.camera.top = 5;
-directionalLight.shadow.camera.bottom = -5;
-directionalLight.shadow.mapSize.width = 1024; 
-directionalLight.shadow.mapSize.height = 1024; 
+directionalLight.shadow.camera.far = 150;
+directionalLight.shadow.camera.left = -50;
+directionalLight.shadow.camera.right = 50;
+directionalLight.shadow.camera.top = 50;
+directionalLight.shadow.camera.bottom = -50;
+directionalLight.shadow.mapSize.width = 2048; 
+directionalLight.shadow.mapSize.height = 2048; 
 
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -18,3 +18,6 @@ pour le moment il est juste possible je manipuler les objets dans la scene et de
 - couleurs: permet de modifier la couleur de l'objet selectionné
 - sauvegarder: permet de sauvegarder la scene dans un fichier gltf
 - charger: permet de charger un fichier gltf dans la scene
+
+## preview du projet en cours de developpement (alpha)
+![image](./preview.png)
